@@ -1,0 +1,128 @@
+{
+  "quick_tests": {
+    "1_create_welcome_template": {
+      "url": "POST http://localhost:8080/api/email-templates",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer <your-jwt-token>"
+      },
+      "body": {
+        "name": "Welcome Email",
+        "code": "WELCOME",
+        "subject": "Chào mừng bạn đến với SYSE",
+        "content": "<h1>Xin chào {{username}}!</h1><p>Cảm ơn bạn đã đăng ký.</p>",
+        "placeholders": "[\"username\"]",
+        "status": true
+      }
+    },
+
+    "2_create_password_reset": {
+      "url": "POST http://localhost:8080/api/email-templates",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer <your-jwt-token>"
+      },
+      "body": {
+        "name": "Password Reset",
+        "code": "RESET_PASSWORD",
+        "subject": "Đặt lại mật khẩu",
+        "content": "<h2>Đặt lại mật khẩu</h2><p>Click vào link: {{resetLink}}</p>",
+        "placeholders": "[\"resetLink\"]",
+        "status": true
+      }
+    },
+
+    "3_get_all": {
+      "url": "GET http://localhost:8080/api/email-templates",
+      "headers": {
+        "Authorization": "Bearer <your-jwt-token>"
+      }
+    },
+
+    "4_get_by_id": {
+      "url": "GET http://localhost:8080/api/email-templates/1",
+      "headers": {
+        "Authorization": "Bearer <your-jwt-token>"
+      }
+    },
+
+    "5_get_by_code": {
+      "url": "GET http://localhost:8080/api/email-templates/code/WELCOME",
+      "headers": {
+        "Authorization": "Bearer <your-jwt-token>"
+      }
+    },
+
+    "6_filter_active": {
+      "url": "GET http://localhost:8080/api/email-templates?status=true",
+      "headers": {
+        "Authorization": "Bearer <your-jwt-token>"
+      }
+    },
+
+    "7_update_template": {
+      "url": "PUT http://localhost:8080/api/email-templates/1",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer <your-jwt-token>"
+      },
+      "body": {
+        "name": "Welcome Email - Updated",
+        "code": "WELCOME",
+        "subject": "Chào mừng bạn đến với SYSE - Phiên bản mới",
+        "content": "<h1>Xin chào {{username}}!</h1><p>Cảm ơn bạn đã đăng ký.</p><p>Chúc bạn có trải nghiệm tuyệt vời!</p>",
+        "placeholders": "[\"username\", \"fullName\"]",
+        "status": true
+      }
+    },
+
+    "8_disable_template": {
+      "url": "DELETE http://localhost:8080/api/email-templates/1",
+      "headers": {
+        "Authorization": "Bearer <your-jwt-token>"
+      }
+    }
+  },
+
+  "curl_commands": {
+    "create": "curl -X POST http://localhost:8080/api/email-templates -H 'Content-Type: application/json' -H 'Authorization: Bearer <token>' -d '{\"name\":\"Welcome Email\",\"code\":\"WELCOME\",\"subject\":\"Chào mừng\",\"content\":\"<h1>Xin chào {{username}}!</h1>\",\"placeholders\":\"[\\\"username\\\"]\",\"status\":true}'",
+    
+    "get_all": "curl -X GET http://localhost:8080/api/email-templates -H 'Authorization: Bearer <token>'",
+    
+    "get_by_id": "curl -X GET http://localhost:8080/api/email-templates/1 -H 'Authorization: Bearer <token>'",
+    
+    "update": "curl -X PUT http://localhost:8080/api/email-templates/1 -H 'Content-Type: application/json' -H 'Authorization: Bearer <token>' -d '{\"name\":\"Updated Template\",\"code\":\"WELCOME\",\"subject\":\"Updated Subject\",\"content\":\"<h1>Updated Content</h1>\",\"placeholders\":\"[\\\"username\\\"]\",\"status\":true}'",
+    
+    "delete": "curl -X DELETE http://localhost:8080/api/email-templates/1 -H 'Authorization: Bearer <token>'"
+  },
+
+  "test_scenarios": {
+    "scenario_1": {
+      "description": "Tạo và quản lý email template cơ bản",
+      "steps": [
+        "1. Tạo welcome template",
+        "2. Lấy danh sách templates",
+        "3. Cập nhật template",
+        "4. Vô hiệu hóa template"
+      ]
+    },
+    
+    "scenario_2": {
+      "description": "Test các trường hợp lỗi",
+      "steps": [
+        "1. Tạo template với code trùng lặp",
+        "2. Lấy template không tồn tại",
+        "3. Cập nhật template không tồn tại"
+      ]
+    },
+    
+    "scenario_3": {
+      "description": "Test filtering và searching",
+      "steps": [
+        "1. Lọc theo status",
+        "2. Lọc theo code",
+        "3. Lọc theo người tạo"
+      ]
+    }
+  }
+} 

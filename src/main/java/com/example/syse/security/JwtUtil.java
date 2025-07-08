@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 
 @Component
@@ -17,17 +18,29 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
-    public String generateToken(String username) {
+    // Sửa method này để nhận roles
+    public String generateToken(String username, List<String> roles) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("roles", roles) // Thêm roles vào token
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    // Giữ lại method cũ cho backward compatibility
+    public String generateToken(String username) {
+        return generateToken(username, List.of("USER")); // Default role
+    }
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    // Thêm method để extract roles
+    public List<String> extractRoles(String token) {
+        return extractClaim(token, claims -> claims.get("roles", List.class));
     }
 
     public Date extractExpiration(String token) {
@@ -55,4 +68,4 @@ public class JwtUtil {
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
-} 
+}

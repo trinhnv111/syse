@@ -1,9 +1,8 @@
 package com.example.syse.controller;
 
-import com.example.syse.model.User;
-import com.example.syse.model.Role;
-import com.example.syse.repository.UserRepository;
-import com.example.syse.repository.RoleRepository;
+import com.example.syse.dto.UserDto;
+import com.example.syse.dto.RoleDto;
+import com.example.syse.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -13,33 +12,30 @@ import java.util.Map;
 @RequestMapping("/api/admin")
 public class UserController {
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private RoleRepository roleRepository;
+    private UserService userService;
 
     // Xem danh sách user
     @GetMapping("/users")
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getAllUsers() {
+        return userService.getAllUsers();
     }
 
     // Xem danh sách role
     @GetMapping("/roles")
-    public List<Role> getAllRoles() {
-        return roleRepository.findAll();
+    public List<RoleDto> getAllRoles() {
+        return userService.getAllRoles();
     }
 
     // Gán role cho user
     @PostMapping("/users/{userId}/role")
     public Map<String, Object> updateUserRole(@PathVariable Integer userId, @RequestBody Map<String, String> req) {
         String roleName = req.get("role");
-        User user = userRepository.findById(userId).orElse(null);
-        Role role = roleRepository.findByName(roleName).orElse(null);
-        if (user == null || role == null) {
+        boolean success = userService.updateUserRole(userId, roleName);
+        
+        if (success) {
+            return Map.of("success", true, "message", "Role updated successfully");
+        } else {
             return Map.of("success", false, "message", "User or role not found");
         }
-        user.setRole(role);
-        userRepository.save(user);
-        return Map.of("success", true, "message", "Role updated");
     }
 } 

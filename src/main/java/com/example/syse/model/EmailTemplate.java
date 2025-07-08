@@ -44,10 +44,28 @@ public class EmailTemplate {
     // Getters/setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getCode() { return code; }
+    public void setCode(String code) { this.code = code; }
+
+    public String getSubject() { return subject; }
+    public void setSubject(String subject) { this.subject = subject; }
+
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
+
+    public String getPlaceholders() { return placeholders; }
+    public void setPlaceholders(String placeholders) { this.placeholders = placeholders; }
+
     public Boolean getStatus() { return status; }
     public void setStatus(Boolean status) { this.status = status; }
+
     public User getCreatedBy() { return createdBy; }
     public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
-    public String getSubject() { return subject; }
-    public String getContent() { return content; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 } 

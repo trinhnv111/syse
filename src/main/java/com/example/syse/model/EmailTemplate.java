@@ -14,7 +14,6 @@ public class EmailTemplate {
 
     @NotBlank(message = "Tên template không được để trống")
     @Size(min = 2, max = 100, message = "Tên template phải từ 2-100 ký tự")
-    @Pattern(regexp = "^[a-zA-Z0-9\\s\\-_\\u00C0-\\u017F]+$", message = "Tên template chỉ được chứa chữ cái, số, dấu cách, gạch ngang và dấu gạch dưới")
     @Column(nullable = false, length = 100)
     private String name;
 

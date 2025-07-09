@@ -85,7 +85,7 @@ public class DataGenerator implements CommandLineRunner {
         System.out.println("Hoàn thành generate dữ liệu!");
     }
 
-    private void generateRoles() {
+    public void generateRoles() {
         if (roleRepository.count() == 0) {
             List<Role> roles = Arrays.asList(
                 createRole("ADMIN", "Quản trị viên"),
@@ -108,18 +108,29 @@ public class DataGenerator implements CommandLineRunner {
     public void generateUsers(int count) {
         List<User> users = new ArrayList<>();
         List<Role> roles = roleRepository.findAll();
+        Set<String> usedUsernames = new HashSet<>();
+        Set<String> usedEmails = new HashSet<>();
 
-        for (int i = 0; i < count; i++) {
+        int i = 0;
+        while (users.size() < count && i < count * 2) { // tránh vòng lặp vô hạn
+            String username = faker.name().username();
+            String email = faker.internet().emailAddress();
+            if (usedUsernames.contains(username) || usedEmails.contains(email)) {
+                i++;
+                continue;
+            }
             User user = new User();
-            user.setUsername(faker.name().username());
-            user.setEmail(faker.internet().emailAddress());
+            user.setUsername(username);
+            user.setEmail(email);
             user.setPassword(passwordEncoder.encode("password123"));
             user.setFullName(faker.name().fullName());
             user.setEnabled(true);
             user.setRole(roles.get(ThreadLocalRandom.current().nextInt(roles.size())));
             users.add(user);
+            usedUsernames.add(username);
+            usedEmails.add(email);
+            i++;
         }
-
         userRepository.saveAll(users);
         System.out.println("Đã tạo " + users.size() + " users");
     }
@@ -183,8 +194,8 @@ public class DataGenerator implements CommandLineRunner {
         return contents[index % contents.length];
     }
 
-    private String generatePlaceholders(int index) {
-        String[][] placeholders = {
+    private Map<String, String> generatePlaceholders(int index) {
+        String[][] keys = {
             {"username", "fullName"},
             {"fullName", "resetLink"},
             {"fullName", "verificationLink"},
@@ -198,8 +209,12 @@ public class DataGenerator implements CommandLineRunner {
             {"fullName"},
             {"fullName", "announcement"}
         };
-        
-        return createJsonArray(placeholders[index % placeholders.length]);
+        Map<String, String> map = new HashMap<>();
+        for (String key : keys[index % keys.length]) {
+            // Sample value for each key
+            map.put(key, "sample_" + key);
+        }
+        return map;
     }
 
     public void generateNotificationTemplates(int count) {
@@ -215,7 +230,11 @@ public class DataGenerator implements CommandLineRunner {
             template.setName(faker.lorem().sentence(3, 5));
             template.setCode(notificationTypes[i % notificationTypes.length] + "_" + (i + 1));
             template.setContent(faker.lorem().paragraph());
-            template.setPlaceholders(createJsonArray("username", "fullName"));
+            // Use Map for placeholders
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("username", faker.name().username());
+            placeholders.put("fullName", faker.name().fullName());
+            template.setPlaceholders(placeholders);
             template.setStatus(faker.random().nextBoolean());
             template.setCreatedBy(users.get(ThreadLocalRandom.current().nextInt(users.size())));
             templates.add(template);

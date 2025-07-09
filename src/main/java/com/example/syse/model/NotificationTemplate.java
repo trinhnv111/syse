@@ -1,8 +1,11 @@
 package com.example.syse.model;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Entity
 @Table(name = "notification_templates")
@@ -28,7 +31,8 @@ public class NotificationTemplate {
 
     @Size(max = 2000, message = "Placeholders không được vượt quá 2000 ký tự")
     @Column(columnDefinition = "json")
-    private String placeholders;
+    @Convert(converter = MapToJsonConverter.class)
+    private Map<String, String> placeholders;
 
     @NotNull(message = "Trạng thái không được để trống")
     @Column(nullable = false)
@@ -78,11 +82,11 @@ public class NotificationTemplate {
         this.content = content;
     }
 
-    public String getPlaceholders() {
+    public Map<String, String> getPlaceholders() {
         return placeholders;
     }
 
-    public void setPlaceholders(String placeholders) {
+    public void setPlaceholders(Map<String, String> placeholders) {
         this.placeholders = placeholders;
     }
 

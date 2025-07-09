@@ -146,4 +146,19 @@ public class EmailTemplateController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
+    // TEST: Render template with placeholders
+    @PostMapping("/test-render")
+    public ResponseEntity<ApiResponse<String>> testRender(@RequestBody Map<String, Object> payload) {
+        try {
+            String content = (String) payload.get("content");
+            Map<String, String> placeholders = (Map<String, String>) payload.get("placeholders");
+            String rendered = emailTemplateService.renderContent(content, placeholders);
+            ApiResponse<String> response = ApiResponse.success("Render thành công", rendered);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<String> response = ApiResponse.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 } 

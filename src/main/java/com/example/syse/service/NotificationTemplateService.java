@@ -6,6 +6,7 @@ import com.example.syse.exception.EmailTemplateException;
 import com.example.syse.model.NotificationTemplate;
 import com.example.syse.repository.NotificationTemplateRepository;
 import com.example.syse.util.ValidationUtil;
+import com.example.syse.util.TemplateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +78,13 @@ public class NotificationTemplateService {
             .orElseThrow(() -> new ResourceNotFoundException("NotificationTemplate", "id", id));
         template.setStatus(false);
         notificationTemplateRepository.save(template);
+    }
+
+    /**
+     * Render template content by replacing {{key}} with value from placeholders.
+     */
+    public String renderContent(String content, java.util.Map<String, String> placeholders) {
+        return TemplateUtil.renderTemplate(content, placeholders);
     }
 
     // Business validation

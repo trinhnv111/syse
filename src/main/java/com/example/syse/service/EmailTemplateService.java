@@ -6,6 +6,7 @@ import com.example.syse.exception.ResourceNotFoundException;
 import com.example.syse.model.EmailTemplate;
 import com.example.syse.repository.EmailTemplateRepository;
 import com.example.syse.util.ValidationUtil;
+import com.example.syse.util.TemplateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -90,14 +91,20 @@ public class EmailTemplateService {
         emailTemplateRepository.save(template);
     }
     
-    // Private validation methods
+    /**
+     * Render template content by replacing {{key}} with value from placeholders.
+     */
+    public String renderContent(String content, java.util.Map<String, String> placeholders) {
+        return TemplateUtil.renderTemplate(content, placeholders);
+    }
+   
     private void validateTemplateForCreation(EmailTemplateDto templateDto) {
-        // Check if code already exists
+        // Check if code 
         if (emailTemplateRepository.findByCode(templateDto.getCode()).isPresent()) {
             throw new EmailTemplateException("Mã template đã tồn tại: " + templateDto.getCode(), "DUPLICATE_CODE");
         }
         
-        // Validate content
+        // Validate 
         validationUtil.validateEmailTemplateContent(templateDto.getContent(), "content");
         validationUtil.validateEmailTemplateContent(templateDto.getSubject(), "subject");
     }
@@ -109,8 +116,7 @@ public class EmailTemplateService {
         
         // Check if name is being changed and if it conflicts with existing
         if (!existingTemplate.getName().equals(templateDto.getName())) {
-            // Additional business rule: name should be unique (if needed)
-            // This is optional and depends on your business requirements
+            
         }
     }
 } 

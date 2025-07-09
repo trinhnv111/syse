@@ -2,6 +2,7 @@ package com.example.syse.dto;
 
 import jakarta.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 
 public class EmailTemplateDto {
     
@@ -24,7 +25,7 @@ public class EmailTemplateDto {
     private String content;
     
     @Size(max = 2000, message = "Placeholders không được vượt quá 2000 ký tự")
-    private String placeholders;
+    private Map<String, String> placeholders;
     
     @JsonProperty("status")
     private Boolean status = true;
@@ -32,7 +33,7 @@ public class EmailTemplateDto {
     // Constructors
     public EmailTemplateDto() {}
     
-    public EmailTemplateDto(String name, String code, String subject, String content, String placeholders, Boolean status) {
+    public EmailTemplateDto(String name, String code, String subject, String content, Map<String, String> placeholders, Boolean status) {
         this.name = name;
         this.code = code;
         this.subject = subject;
@@ -54,8 +55,8 @@ public class EmailTemplateDto {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
     
-    public String getPlaceholders() { return placeholders; }
-    public void setPlaceholders(String placeholders) { this.placeholders = placeholders; }
+    public Map<String, String> getPlaceholders() { return placeholders; }
+    public void setPlaceholders(Map<String, String> placeholders) { this.placeholders = placeholders; }
     
     public Boolean getStatus() { return status; }
     public void setStatus(Boolean status) { this.status = status; }

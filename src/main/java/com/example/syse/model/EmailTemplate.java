@@ -1,9 +1,12 @@
 package com.example.syse.model;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "email_templates")
@@ -35,7 +38,8 @@ public class EmailTemplate {
 
     @Size(max = 2000, message = "Placeholders không được vượt quá 2000 ký tự")
     @Column(columnDefinition = "json")
-    private String placeholders; // Lưu JSON dạng String
+    @Convert(converter = MapToJsonConverter.class)
+    private Map<String, String> placeholders; // Lưu JSON dạng String
 
     @NotNull(message = "Trạng thái không được để trống")
     @Column(nullable = false)
@@ -69,8 +73,8 @@ public class EmailTemplate {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
-    public String getPlaceholders() { return placeholders; }
-    public void setPlaceholders(String placeholders) { this.placeholders = placeholders; }
+    public Map<String, String> getPlaceholders() { return placeholders; }
+    public void setPlaceholders(Map<String, String> placeholders) { this.placeholders = placeholders; }
 
     public Boolean getStatus() { return status; }
     public void setStatus(Boolean status) { this.status = status; }

@@ -5,8 +5,14 @@ import com.example.syse.model.User;
 import com.example.syse.service.EmailTemplateService;
 import com.example.syse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,12 +50,47 @@ public class EmailTemplateController {
         return emailTemplateService.findByCode(code).orElse(null);
     }
 
-    // Danh sách, lọc
+    // Danh sách, lọc với phân trang
     @GetMapping
-    public List<EmailTemplate> filter(@RequestParam(required = false) Boolean status,
-                                      @RequestParam(required = false) Integer createdBy,
-                                      @RequestParam(required = false) String code) {
-        return emailTemplateService.filter(status, createdBy, code);
+    public ResponseEntity<Map<String, Object>> filter(
+            @RequestParam(required = false) Boolean status,
+            @RequestParam(required = false) Integer createdBy,
+            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        
+        // Validate parameters
+        if (page < 0) page = 0;
+        if (size < 1 || size > 100) size = 10;
+        
+        // Create sort
+        Sort sort = sortDir.equalsIgnoreCase("asc") ?
+            Sort.by(sortBy).descending() : 
+            Sort.by(sortBy).ascending();
+        
+        // Create pageable
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        // Get paginated results
+        Page<EmailTemplate> emailTemplatePage = emailTemplateService.filterWithPagination(
+            status, createdBy, code, search, pageable);
+        
+        // Build response
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", emailTemplatePage.getContent());
+        response.put("currentPage", emailTemplatePage.getNumber());
+        response.put("totalItems", emailTemplatePage.getTotalElements());
+        response.put("totalPages", emailTemplatePage.getTotalPages());
+        response.put("size", emailTemplatePage.getSize());
+        response.put("hasNext", emailTemplatePage.hasNext());
+        response.put("hasPrevious", emailTemplatePage.hasPrevious());
+        response.put("isFirst", emailTemplatePage.isFirst());
+        response.put("isLast", emailTemplatePage.isLast());
+        
+        return ResponseEntity.ok(response);
     }
 
     // ADMIN: Disable template

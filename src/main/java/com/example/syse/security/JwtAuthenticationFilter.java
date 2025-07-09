@@ -44,11 +44,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 if (jwtUtil.isTokenValid(token, username)) {
-                    // Extract roles from token thay vì load từ DB
                     List<String> roles = jwtUtil.extractRoles(token);
 
                     List<SimpleGrantedAuthority> authorities = roles.stream()
-                            .map(role -> new SimpleGrantedAuthority(role)) // Không thêm "ROLE_" prefix
+                            .map(role -> new SimpleGrantedAuthority(role))
                             .collect(Collectors.toList());
 
                     // Create authentication token với authorities từ JWT

@@ -25,20 +25,16 @@ public class UserService {
     public UserDto convertToDto(User user) {
         if (user == null) return null;
         
-        String roleName = null;
+        UserDto dto = new UserDto();
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setFullName(user.getFullName());
+        dto.setStatus(user.getEnabled());
         if (user.getRole() != null) {
-            roleName = user.getRole().getName();
+            dto.setRoleId(user.getRole().getId().longValue());
         }
         
-        return new UserDto(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getFullName(),
-            roleName,
-            user.getEnabled(),
-            user.getCreatedAt()
-        );
+        return dto;
     }
 
     // Convert Role entity to RoleDto

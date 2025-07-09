@@ -15,7 +15,6 @@ public interface EmailTemplateRepository extends JpaRepository<EmailTemplate, Lo
     
     // Pagination methods
     Page<EmailTemplate> findByStatus(Boolean status, Pageable pageable);
-    Page<EmailTemplate> findByCreatedBy_Id(Integer createdById, Pageable pageable);
     Page<EmailTemplate> findByCodeContaining(String code, Pageable pageable);
     Page<EmailTemplate> findByNameContainingIgnoreCaseOrCodeContainingIgnoreCaseOrSubjectContainingIgnoreCase(
         String name, String code, String subject, Pageable pageable);

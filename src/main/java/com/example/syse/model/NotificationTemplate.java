@@ -1,6 +1,7 @@
 package com.example.syse.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,18 +11,26 @@ public class NotificationTemplate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Tên template không được để trống")
+    @Size(min = 2, max = 100, message = "Tên template phải từ 2-100 ký tự")
     @Column(nullable = false, length = 100)
     private String name;
 
+    @NotBlank(message = "Mã template không được để trống")
+    @Size(min = 2, max = 100, message = "Mã template phải từ 2-100 ký tự")
     @Column(nullable = false, unique = true, length = 100)
     private String code;
 
+    @NotBlank(message = "Nội dung không được để trống")
+    @Size(min = 10, max = 10000, message = "Nội dung phải từ 10-10000 ký tự")
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Size(max = 2000, message = "Placeholders không được vượt quá 2000 ký tự")
     @Column(columnDefinition = "json")
     private String placeholders;
 
+    @NotNull(message = "Trạng thái không được để trống")
     @Column(nullable = false)
     private Boolean status = true;
 

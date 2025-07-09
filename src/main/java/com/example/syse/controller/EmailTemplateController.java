@@ -1,19 +1,22 @@
 package com.example.syse.controller;
 
+import com.example.syse.dto.ApiResponse;
+import com.example.syse.dto.EmailTemplateDto;
 import com.example.syse.model.EmailTemplate;
 import com.example.syse.model.User;
 import com.example.syse.service.EmailTemplateService;
 import com.example.syse.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,77 +29,121 @@ public class EmailTemplateController {
 
     // ADMIN: Tạo mới template
     @PostMapping
-    public EmailTemplate create(@RequestBody EmailTemplate template, Authentication auth) {
-        User user = userRepository.findByUsername(auth.getName()).orElse(null);
-        template.setCreatedBy(user);
-        return emailTemplateService.create(template);
+    public ResponseEntity<ApiResponse<EmailTemplate>> create(
+            @Valid @RequestBody EmailTemplateDto templateDto, 
+            Authentication auth) {
+        try {
+            User user = userRepository.findByUsername(auth.getName()).orElse(null);
+            EmailTemplate template = emailTemplateService.create(templateDto);
+            template.setCreatedBy(user);
+            
+            ApiResponse<EmailTemplate> response = ApiResponse.success("Tạo template thành công", template);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            ApiResponse<EmailTemplate> response = ApiResponse.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
 
     // ADMIN: Cập nhật template
     @PutMapping("/{id}")
-    public EmailTemplate update(@PathVariable Long id, @RequestBody EmailTemplate template) {
-        return emailTemplateService.update(id, template);
+    public ResponseEntity<ApiResponse<EmailTemplate>> update(
+            @PathVariable Long id, 
+            @Valid @RequestBody EmailTemplateDto templateDto) {
+        try {
+            EmailTemplate template = emailTemplateService.update(id, templateDto);
+            ApiResponse<EmailTemplate> response = ApiResponse.success("Cập nhật template thành công", template);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<EmailTemplate> response = ApiResponse.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
 
     // Xem chi tiết template theo id
     @GetMapping("/{id}")
-    public EmailTemplate getById(@PathVariable Long id) {
-        return emailTemplateService.findById(id).orElse(null);
+    public ResponseEntity<ApiResponse<EmailTemplate>> getById(@PathVariable Long id) {
+        try {
+            EmailTemplate template = emailTemplateService.findById(id);
+            ApiResponse<EmailTemplate> response = ApiResponse.success("Lấy thông tin template thành công", template);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<EmailTemplate> response = ApiResponse.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
     }
 
     // Xem chi tiết template theo code
     @GetMapping("/code/{code}")
-    public EmailTemplate getByCode(@PathVariable String code) {
-        return emailTemplateService.findByCode(code).orElse(null);
+    public ResponseEntity<ApiResponse<EmailTemplate>> getByCode(@PathVariable String code) {
+        try {
+            EmailTemplate template = emailTemplateService.findByCode(code);
+            ApiResponse<EmailTemplate> response = ApiResponse.success("Lấy thông tin template thành công", template);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<EmailTemplate> response = ApiResponse.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
     }
 
     // Danh sách, lọc với phân trang
     @GetMapping
-    public ResponseEntity<Map<String, Object>> filter(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> filter(
             @RequestParam(required = false) Boolean status,
-            @RequestParam(required = false) Integer createdBy,
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @RequestParam(defaultValue = "asc") String sortDir) {
         
-        // Validate parameters
-        if (page < 0) page = 0;
-        if (size < 1 || size > 100) size = 10;
-        
-        // Create sort
-        Sort sort = sortDir.equalsIgnoreCase("asc") ?
-            Sort.by(sortBy).descending() : 
-            Sort.by(sortBy).ascending();
-        
-        // Create pageable
-        Pageable pageable = PageRequest.of(page, size, sort);
-        
-        // Get paginated results
-        Page<EmailTemplate> emailTemplatePage = emailTemplateService.filterWithPagination(
-            status, createdBy, code, search, pageable);
-        
-        // Build response
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", emailTemplatePage.getContent());
-        response.put("currentPage", emailTemplatePage.getNumber());
-        response.put("totalItems", emailTemplatePage.getTotalElements());
-        response.put("totalPages", emailTemplatePage.getTotalPages());
-        response.put("size", emailTemplatePage.getSize());
-        response.put("hasNext", emailTemplatePage.hasNext());
-        response.put("hasPrevious", emailTemplatePage.hasPrevious());
-        response.put("isFirst", emailTemplatePage.isFirst());
-        response.put("isLast", emailTemplatePage.isLast());
-        
-        return ResponseEntity.ok(response);
+        try {
+            // Validate parameters
+            if (page < 0) page = 0;
+            if (size < 1 || size > 100) size = 10;
+            
+            // Create sort
+            Sort sort = sortDir.equalsIgnoreCase("asc") ?
+                Sort.by(sortBy).ascending() : 
+                Sort.by(sortBy).descending();
+            
+            // Create pageable
+            Pageable pageable = PageRequest.of(page, size, sort);
+            
+            // Get paginated results
+            Page<EmailTemplate> emailTemplatePage = emailTemplateService.filterWithPagination(
+                status, code, search, pageable);
+            
+            // Build response
+            Map<String, Object> paginationData = new HashMap<>();
+            paginationData.put("content", emailTemplatePage.getContent());
+            paginationData.put("currentPage", emailTemplatePage.getNumber());
+            paginationData.put("totalItems", emailTemplatePage.getTotalElements());
+            paginationData.put("totalPages", emailTemplatePage.getTotalPages());
+            paginationData.put("size", emailTemplatePage.getSize());
+            paginationData.put("hasNext", emailTemplatePage.hasNext());
+            paginationData.put("hasPrevious", emailTemplatePage.hasPrevious());
+            paginationData.put("isFirst", emailTemplatePage.isFirst());
+            paginationData.put("isLast", emailTemplatePage.isLast());
+            
+            ApiResponse<Map<String, Object>> response = ApiResponse.success("Lấy danh sách template thành công", paginationData);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<Map<String, Object>> response = ApiResponse.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
 
     // ADMIN: Disable template
     @DeleteMapping("/{id}")
-    public Map<String, Object> disable(@PathVariable Long id) {
-        emailTemplateService.disable(id);
-        return Map.of("success", true);
+    public ResponseEntity<ApiResponse<Void>> disable(@PathVariable Long id) {
+        try {
+            emailTemplateService.disable(id);
+            ApiResponse<Void> response = ApiResponse.success("Vô hiệu hóa template thành công");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<Void> response = ApiResponse.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
 } 

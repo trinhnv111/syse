@@ -133,7 +133,7 @@ public class EmailTemplateService {
         return new EmailTemplateDetailDto(template, renderedContent, renderedSubject, placeholders, availablePlaceholders);
     }
 
-    // Trích xuất các placeholder có sẵn từ content
+    // Trích các placeholder có sẵn từ content
     private Map<String, String> extractPlaceholders(String content) {
         Map<String, String> placeholders = new HashMap<>();
         Pattern pattern = Pattern.compile("\\{\\{([^}]+)\\}\\}");
@@ -159,13 +159,64 @@ public class EmailTemplateService {
     }
     
     private void validateTemplateForUpdate(EmailTemplateDto templateDto, EmailTemplate existingTemplate) {
-        // Validate content
+        // Validate content và subject
         validationUtil.validateEmailTemplateContent(templateDto.getContent(), "content");
         validationUtil.validateEmailTemplateContent(templateDto.getSubject(), "subject");
-        
-        // Check if name is being changed and if it conflicts with existing
+
+        // Kiểm tra nếu name đang được thay đổi và có xung đột với template khác
         if (!existingTemplate.getName().equals(templateDto.getName())) {
-            
+            // Kiểm tra xem có template nào khác đã có tên này chưa
+            Optional<EmailTemplate> templateWithSameName = emailTemplateRepository.findByName(templateDto.getName());
+            if (templateWithSameName.isPresent() && !templateWithSameName.get().getId().equals(existingTemplate.getId())) {
+                throw new EmailTemplateException("Tên template đã tồn tại: " + templateDto.getName(), "DUPLICATE_NAME");
+            }
         }
+
+        // Kiểm tra nếu mã code đang được thay đổi
+        if (!existingTemplate.getCode().equals(templateDto.getCode())) {
+            // Kiểm tra xem có template nào khác đã có code này chưa
+            Optional<EmailTemplate> templateWithSameCode = emailTemplateRepository.findByCode(templateDto.getCode());
+            if (templateWithSameCode.isPresent() && !templateWithSameCode.get().getId().equals(existingTemplate.getId())) {
+                throw new EmailTemplateException("Mã template đã tồn tại: " + templateDto.getCode(), "DUPLICATE_CODE");
+            }
+        }
+
+        // Validate placeholders nếu có
+        if (templateDto.getPlaceholders() != null) {
+            validatePlaceholders(templateDto.getPlaceholders());
+        }
+
+        // Kiểm tra xem template có đang được sử dụng không (nếu cần)
+        // Có thể thêm logic kiểm tra template có đang được sử dụng trong các email đã gửi không
+        validateTemplateUsage(existingTemplate);
+    }
+
+    private void validatePlaceholders(Map<String, String> placeholders) {
+        if (placeholders != null) {
+            for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                
+                // Kiểm tra key không được rỗng
+                if (key == null || key.trim().isEmpty()) {
+                    throw new EmailTemplateException("Placeholder key không được để trống", "INVALID_PLACEHOLDER_KEY");
+                }
+                
+                // Kiểm tra key chỉ chứa ký tự hợp lệ
+                if (!key.matches("^[a-zA-Z0-9_]+$")) {
+                    throw new EmailTemplateException("Placeholder key chỉ được chứa chữ cái, số và dấu gạch dưới: " + key, "INVALID_PLACEHOLDER_KEY");
+                }
+                
+                // Kiểm tra độ dài key
+                if (key.length() > 50) {
+                    throw new EmailTemplateException("Placeholder key không được vượt quá 50 ký tự: " + key, "INVALID_PLACEHOLDER_KEY");
+                }
+            }
+        }
+    }
+
+    private void validateTemplateUsage(EmailTemplate template) {
+        // Có thể thêm logic kiểm tra xem template có đang được sử dụng không
+
     }
 } 

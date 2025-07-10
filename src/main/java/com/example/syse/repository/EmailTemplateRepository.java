@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface EmailTemplateRepository extends JpaRepository<EmailTemplate, Long> {
     Optional<EmailTemplate> findByCode(String code);
+    Optional<EmailTemplate> findByName(String name);
     List<EmailTemplate> findByStatus(Boolean status);
     List<EmailTemplate> findByCreatedBy_Id(Integer createdById);
     List<EmailTemplate> findByCodeContaining(String code);

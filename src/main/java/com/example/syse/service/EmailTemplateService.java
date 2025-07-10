@@ -216,7 +216,7 @@ public class EmailTemplateService {
     }
 
     private void validateTemplateUsage(EmailTemplate template) {
-        // Có thể thêm logic kiểm tra xem template có đang được sử dụng không
+        // kiểm tra xem template có đang được sử dụng không
 
     }
 } 

@@ -135,8 +135,8 @@ public class NotificationTemplateController {
         }
     }
 
-    // TEST: Render template with placeholders
-    @PostMapping("/test-render")
+    // Render template
+    @PostMapping("/render")
     public ResponseEntity<ApiResponse<String>> testRender(@RequestBody Map<String, Object> payload) {
         try {
             String content = (String) payload.get("content");

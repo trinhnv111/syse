@@ -80,14 +80,12 @@ public class NotificationTemplateService {
         notificationTemplateRepository.save(template);
     }
 
-    /**
-     * Render template content by replacing {{key}} with value from placeholders.
-     */
+    //Render template
     public String renderContent(String content, java.util.Map<String, String> placeholders) {
         return TemplateUtil.renderTemplate(content, placeholders);
     }
 
-    // Business validation
+    //  validation
     private void validateTemplateForCreation(NotificationTemplateDto dto) {
         if (notificationTemplateRepository.findByCode(dto.getCode()).isPresent()) {
             throw new EmailTemplateException("Mã template đã tồn tại: " + dto.getCode(), "DUPLICATE_CODE");

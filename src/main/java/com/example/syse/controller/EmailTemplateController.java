@@ -2,6 +2,7 @@ package com.example.syse.controller;
 
 import com.example.syse.dto.ApiResponse;
 import com.example.syse.dto.EmailTemplateDto;
+import com.example.syse.dto.EmailTemplateDetailDto;
 import com.example.syse.model.EmailTemplate;
 import com.example.syse.model.User;
 import com.example.syse.service.EmailTemplateService;
@@ -72,6 +73,7 @@ public class EmailTemplateController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
+
 
     // Xem chi tiết template theo code
     @GetMapping("/code/{code}")
@@ -147,8 +149,8 @@ public class EmailTemplateController {
         }
     }
 
-    // TEST: Render template with placeholders
-    @PostMapping("/test-render")
+    // Render template
+    @PostMapping("/render")
     public ResponseEntity<ApiResponse<String>> testRender(@RequestBody Map<String, Object> payload) {
         try {
             String content = (String) payload.get("content");
@@ -159,6 +161,36 @@ public class EmailTemplateController {
         } catch (Exception e) {
             ApiResponse<String> response = ApiResponse.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    // Lấy chi tiết template với nội dung đã render
+    @GetMapping("/{id}/detail-with-render")
+    public ResponseEntity<ApiResponse<EmailTemplateDetailDto>> getDetailWithRender(
+            @PathVariable Long id,
+            @RequestParam(required = false) Map<String, String> placeholders) {
+        try {
+            EmailTemplateDetailDto detailDto = emailTemplateService.getDetailWithRender(id, placeholders);
+            ApiResponse<EmailTemplateDetailDto> response = ApiResponse.success("Lấy chi tiết template với nội dung đã render thành công", detailDto);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<EmailTemplateDetailDto> response = ApiResponse.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+    // Lấy chi tiết template theo code với nội dung đã render
+    @GetMapping("/code/{code}/detail-with-render")
+    public ResponseEntity<ApiResponse<EmailTemplateDetailDto>> getDetailByCodeWithRender(
+            @PathVariable String code,
+            @RequestParam(required = false) Map<String, String> placeholders) {
+        try {
+            EmailTemplateDetailDto detailDto = emailTemplateService.getDetailByCodeWithRender(code, placeholders);
+            ApiResponse<EmailTemplateDetailDto> response = ApiResponse.success("Lấy chi tiết template với nội dung đã render thành công", detailDto);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<EmailTemplateDetailDto> response = ApiResponse.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
 } 

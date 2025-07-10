@@ -15,7 +15,7 @@ public class TemplateUtil {
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
-            rendered = rendered.replaceAll("\\\\{\\\\{" + java.util.regex.Pattern.quote(key) + "\\\\}\\\\}", value != null ? value : "");
+            rendered = rendered.replace("{{" + key + "}}", value != null ? value : "");
         }
         return rendered;
     }

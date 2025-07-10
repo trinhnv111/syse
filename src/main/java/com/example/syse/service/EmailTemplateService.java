@@ -1,6 +1,7 @@
 package com.example.syse.service;
 
 import com.example.syse.dto.EmailTemplateDto;
+import com.example.syse.dto.EmailTemplateDetailDto;
 import com.example.syse.exception.EmailTemplateException;
 import com.example.syse.exception.ResourceNotFoundException;
 import com.example.syse.model.EmailTemplate;
@@ -15,6 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Transactional
@@ -91,11 +96,55 @@ public class EmailTemplateService {
         emailTemplateRepository.save(template);
     }
     
-    /**
-     * Render template content by replacing {{key}} with value from placeholders.
-     */
+    //Render template
+
     public String renderContent(String content, java.util.Map<String, String> placeholders) {
         return TemplateUtil.renderTemplate(content, placeholders);
+    }
+
+    // Lấy chi tiết template với nội dung đã render
+    public EmailTemplateDetailDto getDetailWithRender(Long id, Map<String, String> placeholders) {
+        EmailTemplate template = findById(id);
+
+        // Nếu không có placeholder được truyền lên, dùng từ template
+        if (placeholders == null || placeholders.isEmpty()) {
+            placeholders = template.getPlaceholders();
+        }
+
+        return createDetailDto(template, placeholders);
+    }
+
+
+    // Lấy chi tiết template theo code với nội dung đã render
+    public EmailTemplateDetailDto getDetailByCodeWithRender(String code, Map<String, String> placeholders) {
+        EmailTemplate template = findByCode(code);
+        return createDetailDto(template, placeholders);
+    }
+
+    // Tạo DTO với thông tin đã render
+    private EmailTemplateDetailDto createDetailDto(EmailTemplate template, Map<String, String> placeholders) {
+        // Render content và subject
+        String renderedContent = renderContent(template.getContent(), placeholders);
+        String renderedSubject = renderContent(template.getSubject(), placeholders);
+        
+        // Lấy danh sách placeholders có sẵn từ template
+        Map<String, String> availablePlaceholders = extractPlaceholders(template.getContent() + " " + template.getSubject());
+        
+        return new EmailTemplateDetailDto(template, renderedContent, renderedSubject, placeholders, availablePlaceholders);
+    }
+
+    // Trích xuất các placeholder có sẵn từ content
+    private Map<String, String> extractPlaceholders(String content) {
+        Map<String, String> placeholders = new HashMap<>();
+        Pattern pattern = Pattern.compile("\\{\\{([^}]+)\\}\\}");
+        Matcher matcher = pattern.matcher(content);
+        
+        while (matcher.find()) {
+            String placeholder = matcher.group(1).trim();
+            placeholders.put(placeholder, ""); // Giá trị mặc định là rỗng
+        }
+        
+        return placeholders;
     }
    
     private void validateTemplateForCreation(EmailTemplateDto templateDto) {
